@@ -1,0 +1,38 @@
+version: "3.8"
+services:
+  neo4j:
+    image: neo4j:5.10
+    container_name: neo4j-codespace
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/neo4j1234
+    volumes:
+      - ./data:/data
+    networks:
+      - backend
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask-app
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app/app.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+    command: flask run --host=0.0.0.0 --port=5000
+    depends_on:
+      - neo4j
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
